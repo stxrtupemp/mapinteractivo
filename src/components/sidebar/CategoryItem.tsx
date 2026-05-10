@@ -1,6 +1,7 @@
 import { useState } from 'react';
-import { ChevronDown, ChevronRight } from 'lucide-react';
+import { ChevronDown, ChevronRight, Eye, EyeOff } from 'lucide-react';
 import { Category, Point } from '../../types';
+import { useUIStore } from '../../store/uiStore';
 import { SubcategoryItem } from './SubcategoryItem';
 import { PointItem } from './PointItem';
 
@@ -13,6 +14,8 @@ interface CategoryItemProps {
 
 export function CategoryItem({ category, allCategories, points, onPointClick }: CategoryItemProps) {
   const [open, setOpen] = useState(false);
+  const { hiddenCategoryIds, toggleCategoryVisibility } = useUIStore();
+  const hidden = hiddenCategoryIds.has(category.id);
 
   const subcategories = allCategories.filter((c) => c.parent_id === category.id);
   const directPoints = points.filter(
@@ -22,21 +25,35 @@ export function CategoryItem({ category, allCategories, points, onPointClick }: 
 
   return (
     <div>
-      <button
-        onClick={() => setOpen((o) => !o)}
-        className="w-full flex items-center gap-2 px-4 py-2.5 text-left hover:bg-gray-50 transition-colors"
-      >
-        <span
-          className="w-2.5 h-2.5 rounded-full shrink-0"
-          style={{ backgroundColor: category.color }}
-        />
-        <span className="flex-1 text-sm font-medium text-gray-800 truncate">{category.name}</span>
-        {hasChildren && (
-          <span className="text-gray-400 shrink-0">
-            {open ? <ChevronDown size={14} /> : <ChevronRight size={14} />}
+      <div className="flex items-center hover:bg-gray-50 transition-colors">
+        <button
+          onClick={() => setOpen((o) => !o)}
+          className="flex-1 flex items-center gap-2 px-4 py-2.5 text-left min-w-0"
+        >
+          <span
+            className="w-2.5 h-2.5 rounded-full shrink-0 transition-colors"
+            style={{ backgroundColor: hidden ? '#cbd5e1' : category.color }}
+          />
+          <span className={`flex-1 text-sm font-medium truncate transition-colors ${hidden ? 'text-gray-400' : 'text-gray-800'}`}>
+            {category.name}
           </span>
-        )}
-      </button>
+          {hasChildren && (
+            <span className="text-gray-400 shrink-0">
+              {open ? <ChevronDown size={14} /> : <ChevronRight size={14} />}
+            </span>
+          )}
+        </button>
+        <button
+          onClick={() => toggleCategoryVisibility(category.id)}
+          title={hidden ? 'Mostrar en mapa' : 'Ocultar en mapa'}
+          className="pr-4 pl-1 py-2.5 transition-colors"
+        >
+          {hidden
+            ? <EyeOff size={14} className="text-gray-300" />
+            : <Eye size={14} style={{ color: category.color }} />
+          }
+        </button>
+      </div>
 
       {open && (
         <div className="pl-3">

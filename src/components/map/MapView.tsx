@@ -51,7 +51,7 @@ export function MapView({
   onZoneDrawn,
   focusPointId,
 }: MapViewProps) {
-  const { showAlerts, showZones, addingPointMode, addingAlertMode, drawingZoneMode } =
+  const { showAlerts, showZones, hiddenCategoryIds, addingPointMode, addingAlertMode, drawingZoneMode } =
     useUIStore();
 
   const getCategoryColor = useCallback(
@@ -61,6 +61,12 @@ export function MapView({
     },
     [categories]
   );
+
+  const visiblePoints = points.filter((p) => {
+    if (p.category_id && hiddenCategoryIds.has(p.category_id)) return false;
+    if (p.subcategory_id && hiddenCategoryIds.has(p.subcategory_id)) return false;
+    return true;
+  });
 
   const isClickMode = addingPointMode || addingAlertMode;
 
@@ -77,7 +83,7 @@ export function MapView({
 
       {isClickMode && <MapClickHandler onMapClick={onMapClick} />}
 
-      {points.map((point) => (
+      {visiblePoints.map((point) => (
         <PointMarker
           key={point.id}
           point={point}
